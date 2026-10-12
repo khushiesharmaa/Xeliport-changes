@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xeliport dashboard redesign – prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#eef3f5;--card:#fff;--tx:#12222e;--mut:#5d6f7c;--line:#d9e2e7;--ac:#0f766e;--acs:#d9f2ee;--hl:#fff1c2;--hlb:#e0a100;--note:#12222e;--notetx:#e8f0f4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a22;--card:#16262f;--tx:#e6eef2;--mut:#93a6b2;--line:#27404d;--ac:#4fd1c5;--acs:#17403d;--hl:#4a3b0c;--hlb:#e0a100;--note:#0a1318;--notetx:#e6eef2}}
+:root[data-theme="dark"]{--bg:#0e1a22;--card:#16262f;--tx:#e6eef2;--mut:#93a6b2;--line:#27404d;--ac:#4fd1c5;--acs:#17403d;--hl:#4a3b0c;--hlb:#e0a100;--note:#0a1318;--notetx:#e6eef2}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+button,select{font:inherit;color:inherit}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--line)}
+.logo{font-weight:600;font-size:18px;letter-spacing:-.01em}.logo b{color:var(--ac)}
+.role{padding:3px 10px;border-radius:99px;background:var(--acs);color:var(--ac);font-size:13px;font-weight:500}
+.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 14px;cursor:pointer}
+.btn:hover{border-color:var(--ac)}.btn:focus-visible,.tab:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;padding:20px;max-width:1280px;margin:0 auto}
+.wrap.nonotes{grid-template-columns:minmax(0,1fr)}.wrap.nonotes aside{display:none}
+.bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.tabs{display:flex;gap:6px;position:relative}
+.tab{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 16px;cursor:pointer;font-weight:500}
+.tab[aria-selected="true"]{background:var(--ac);border-color:var(--ac);color:#fff}
+.tab:disabled{opacity:.45;cursor:not-allowed;background:transparent;border-style:dashed}
+.tab small{font-weight:400;font-size:11px;margin-left:5px}
+select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 10px}
+.lbl{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;transition:background .3s,border-color .3s}
+.card .k{color:var(--mut);font-size:13px}
+.card .v{font-size:26px;font-weight:600;letter-spacing:-.02em;margin:2px 0}
+.card .s{color:var(--mut);font-size:12.5px}
+.card.chg{background:var(--hl);border-color:var(--hlb);animation:pulse 1.2s ease-out 2}
+@keyframes pulse{50%{box-shadow:0 0 0 5px rgba(224,161,0,.3)}}
+@media(prefers-reduced-motion:reduce){.card.chg{animation:none}}
+.chip{display:inline-block;margin-top:4px;padding:1px 8px;border-radius:99px;background:var(--hlb);color:#1b1400;font-size:12px;font-weight:500}
+.pend{border-style:dashed;background:transparent}
+.pend .v{font-size:16px;font-weight:500;color:var(--mut);display:flex;gap:6px;align-items:center;margin:6px 0}
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--hl);border:1px solid var(--hlb);border-radius:10px;padding:10px 14px;margin-bottom:12px}
+h2{font-size:15px;margin:20px 0 10px;font-weight:600}
+.pin{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--note);color:var(--notetx);border:0;font-size:12px;font-weight:600;cursor:pointer;display:none}
+.shownotes .pin{display:block}
+.pinline{position:relative;display:inline-flex}
+.pinline .pin{top:-9px;right:-9px}
+aside{position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto}
+.note{background:var(--note);color:var(--notetx);border-radius:10px;padding:12px 14px;margin-bottom:10px;border:2px solid transparent;font-size:13.5px}
+.note.on{border-color:var(--ac)}
+.note h3{margin:0 0 6px;font-size:14px}
+.note p{margin:3px 0}.note em{font-style:normal;color:#8fe0d6;font-weight:600}
+.tog{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--mut);cursor:pointer}
+.sum{border-left:4px solid var(--ac);margin-bottom:4px}.sum .sv{font-size:18px;font-weight:500;margin:4px 0}.btn[aria-pressed="true"]{background:var(--ac);color:#fff;border-color:var(--ac)}.seg{display:flex;gap:4px}
+.foot{color:var(--mut);font-size:12px;margin-top:22px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">Xeli<b>port</b></div>
+  <span class="role" id="role"></span>
+  <span class="sp"></span>
+  <span class="seg"><button class="btn" id="vb">Before</button><button class="btn" id="va">After</button></span>
+  <label class="tog"><input type="checkbox" id="nt" checked> Show design notes</label>
+  <span class="pinline"><button class="btn" id="sw">Switch view</button><button class="pin" data-n="2" aria-label="Note 2">2</button></span>
+</header>
+<div class="wrap shownotes" id="wrap">
+  <main>
+    <div id="banner"></div>
+    <div class="bar">
+      <span class="pinline"><div class="tabs" id="tabs" role="tablist" aria-label="Market"></div><button class="pin" data-n="1" aria-label="Note 1">1</button></span>
+      <label class="lbl" id="catwrap">Product category <select id="cat"></select></label>
+    </div>
+    <div id="body"></div>
+    <p class="foot">Rough prototype with sample data. Layout is recreated from the original demo feedback, not copied from the product.</p>
+  </main>
+  <aside id="notes"></aside>
+</div>
+<script>
+const M={UK:{on:1,sym:'£',f:1,rate:105.2},US:{on:1,sym:'$',f:1.27,rate:84},SG:{on:0},UAE:{on:0}};
+const C={'Apparel':['Low',1200],'Cosmetics':['Medium',3100],'Electronics':['High',4800],'Food & beverage':['High',5600]};
+const N=[
+["Unavailable markets look unavailable","Every market tab looks clickable. Some do nothing, so the user finds out by clicking.","SG and UAE are greyed with a dashed border and a \"Soon\" label, the same as on the Supplier screen.","The system reads each market's availability status and sets the tab state. No one hard-codes it per screen."],
+["One consistent \"Switch view\"","Brand shows \"Exit\", Supplier shows \"Switch view\". The user has to work out which does what.","Both screens share one header with the same button in the same place.","The system knows the user's roles and shows only the views they can open."],
+["One currency per market","The 3PL card shows ₹ while its neighbours show £.","All cards show the market currency. The ₹ amount sits underneath as a small secondary line.","The system converts using the live rate and formats by market. The Forex & Banking data already exists."],
+["Show what changed","Changing category silently changes Reg. Complexity and Est. one-time cost.","Changed cards are highlighted with a was → now chip and a short banner.","The system compares the old and new values and flags only what actually changed."],
+["\"Not yet\" instead of \"-\"","A dash with tiny text looks like missing or broken data.","A clock and the label \"Not yet available\" say it is expected, with the reason beneath.","The system tells \"too early\" from \"error\" and applies the right label. Real errors look different."],
+["A summary the system writes","The user compares six numbers across cards to judge a market.","One line at the top says what it means for the chosen market and category.","The system combines complexity, setup cost and monthly logistics, and rewrites the line whenever either choice changes."]
+];
+let S={ver:'after',view:'Brand',mk:'UK',cat:'Apparel',chg:[],prev:null,notes:true,act:0};
+const fmt=(n,s)=>s+Math.round(n).toLocaleString('en-US');
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const pin=n=>`<button class="pin" data-n="${n}" aria-label="Note ${n}">${n}</button>`;
+function money(base,label,sub){const m=M[S.mk],v=base*m.f;return `<div class="card">${label.startsWith('3PL')?pin(3):''}<div class="k">${label}</div><div class="v">${fmt(v,m.sym)}</div><div class="s">${sub||'≈ '+inr(v*m.rate)+' · auto-converted'}</div></div>`}
+function render(){
+ document.getElementById('role').textContent=S.view+' view';
+ document.getElementById('sw').textContent=S.ver=='before'&&S.view=='Brand'?'Exit':'Switch view';
+ document.getElementById('vb').setAttribute('aria-pressed',S.ver=='before');document.getElementById('va').setAttribute('aria-pressed',S.ver=='after');
+ const t=document.getElementById('tabs');
+ t.innerHTML=Object.keys(M).map(k=>`<button class="tab" role="tab" aria-selected="${k==S.mk}" data-m="${k}" ${(S.ver=='before'||M[k].on)?'':'disabled title="Coming soon"'}>${k}${(S.ver=='before'||M[k].on)?'':'<small>Soon</small>'}</button>`).join('');
+ document.getElementById('catwrap').style.display=S.view=='Brand'?'':'none';
+ const m=M[S.mk],[cx,cc]=C[S.cat],p=S.prev;let h='';
+ const ch=k=>S.chg.includes(k)?' chg':'';
+ if(S.ver=='before'&&S.view=='Brand'){
+  h+=`<h2>Current dashboard: monthly logistics costs</h2><div class="grid"><div class="card"><div class="k">3PL Cost (Mo)</div><div class="v">${inr(59*m.f*m.rate)}</div></div>`+['Storage','Delivery','Returns'].map((l,i)=>`<div class="card"><div class="k">${l}</div><div class="v">${fmt([18,22,9][i]*m.f,m.sym)}</div></div>`).join('')+`</div><h2>Entering this market</h2><div class="grid"><div class="card"><div class="k">Reg. Complexity</div><div class="v">${cx}</div></div><div class="card"><div class="k">Est. one-time cost</div><div class="v">${fmt(cc*m.f,m.sym)}</div></div><div class="card"><div class="k">Clearance Rate</div><div class="v">-</div><div class="s">first consignment</div></div><div class="card"><div class="k">Repatriated</div><div class="v">-</div><div class="s">first full month live</div></div></div>`;
+ }else if(S.view=='Brand'){
+  h+=`<div class="card sum">${pin(6)}<div class="k">Worked out for you</div><div class="sv">${S.cat} in ${S.mk}: ${cx.toLowerCase()} regulatory complexity, about ${fmt(cc*m.f,m.sym)} to set up, ${fmt(108*m.f,m.sym)} a month in logistics.</div><div class="s">Currency, market status and figures are set by the system. You only choose a market and a category.</div></div>`;
+  h+=`<h2>Monthly logistics costs</h2><div class="grid">${money(59,'3PL cost (month)')+money(18,'Storage')+money(22,'Delivery')+money(9,'Returns')}</div>`;
+  h+=`<h2>Entering this market</h2><div class="grid">
+   <div class="card${ch('r')}">${pin(4)}<div class="k">Reg. complexity</div><div class="v">${cx}</div>${S.chg.includes('r')?`<span class="chip">was ${p.cx} → now ${cx}</span>`:'<div class="s">For '+S.cat+'</div>'}</div>
+   <div class="card${ch('c')}"><div class="k">Est. one-time cost</div><div class="v">${fmt(cc*m.f,m.sym)}</div>${S.chg.includes('c')?`<span class="chip">was ${fmt(p.cc*m.f,m.sym)}</span>`:'<div class="s">≈ '+inr(cc*m.f*m.rate)+'</div>'}</div></div>`;
+  h+=`<h2>First shipments</h2><div class="grid">
+   <div class="card pend">${pin(5)}<div class="k">Clearance rate</div><div class="v">◷ Not yet available</div><div class="s">Starts after first consignment</div></div>
+   <div class="card pend"><div class="k">Repatriated</div><div class="v">◷ Not yet available</div><div class="s">Starts after first full month live</div></div></div>`;
+ }else{
+  h+=`<h2>Supplier overview</h2><div class="grid"><div class="card"><div class="k">Open purchase orders</div><div class="v">14</div><div class="s">3 due this week</div></div><div class="card"><div class="k">Awaiting pickup</div><div class="v">6</div><div class="s">Pickup booked for 4</div></div>${money(7400,'Payout pending','Pays out on the 5th')}<div class="card"><div class="k">On-time rate</div><div class="v">96%</div><div class="s">Last 30 days</div></div></div>`;
+ }
+ document.getElementById('body').innerHTML=h;
+ const b=document.getElementById('banner');
+ b.innerHTML=S.chg.length&&S.ver!='before'?`<div class="banner" role="status"><span><b>${S.chg.length} values updated for ${S.cat}.</b> Reg. complexity and est. one-time cost are highlighted below.</span><button class="btn" id="dm">Dismiss</button></div>`:'';
+ const d=document.getElementById('dm');if(d)d.onclick=()=>{S.chg=[];render()};
+ document.getElementById('notes').innerHTML=`<h2 style="margin-top:0">Design notes: less work for the user, more for the system</h2>`+N.map((n,i)=>`<div class="note${S.act==i+1?' on':''}" id="n${i+1}"><h3>${i+1}. ${n[0]}</h3><p><em>Before</em> ${n[1]}</p><p><em>After</em> ${n[2]}</p><p><em>Backend</em> ${n[3]}</p></div>`).join('');
+ const w=document.getElementById('wrap');w.classList.toggle('shownotes',S.notes);w.classList.toggle('nonotes',!S.notes);
+ document.querySelectorAll('.pin').forEach(x=>x.onclick=()=>{S.act=+x.dataset.n;render();const e=document.getElementById('n'+S.act);if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})});
+ document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>{if(!M[x.dataset.m].on)return;S.mk=x.dataset.m;S.chg=[];render()});
+}
+const sel=document.getElementById('cat');
+sel.innerHTML=Object.keys(C).map(k=>`<option>${k}</option>`).join('');
+sel.onchange=()=>{const o=C[S.cat],n=C[sel.value];S.prev={cx:o[0],cc:o[1]};S.cat=sel.value;S.chg=[];if(o[0]!=n[0])S.chg.push('r');if(o[1]!=n[1])S.chg.push('c');render();clearTimeout(window._t);window._t=setTimeout(()=>{S.chg=[];render()},9000)};
+document.getElementById('sw').onclick=()=>{S.view=S.view=='Brand'?'Supplier':'Brand';S.chg=[];render()};
+document.getElementById('vb').onclick=()=>{S.ver='before';S.chg=[];render()};document.getElementById('va').onclick=()=>{S.ver='after';render()};
+document.getElementById('nt').onchange=e=>{S.notes=e.target.checked;render()};
+render();
+</script>
+</body>
+</html>
